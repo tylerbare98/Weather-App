@@ -16,17 +16,27 @@ export default function ThemeControls({
   theme
 }: ThemeControlsProps) {
   return (
-    <div style={{ position: 'absolute', top: '20px', right: '20px', display: 'flex', gap: '10px' }}>
+    <div style={{
+      position: 'absolute',
+      top: '10px',
+      right: '10px',
+      display: 'flex',
+      gap: '8px',
+      flexWrap: 'wrap',
+      justifyContent: 'flex-end'
+    }}>
       <button
         onClick={() => setIsCelsius(!isCelsius)}
         style={{
-          padding: '10px 20px',
+          padding: '8px 12px',
           background: theme.buttonBg,
           color: theme.buttonText,
           border: 'none',
           borderRadius: '5px',
           cursor: 'pointer',
-          fontSize: '14px'
+          fontSize: '13px',
+          minWidth: '45px',
+          whiteSpace: 'nowrap'
         }}
       >
         {isCelsius ? '°F' : '°C'}
@@ -34,16 +44,17 @@ export default function ThemeControls({
       <button
         onClick={() => setIsDarkMode(!isDarkMode)}
         style={{
-          padding: '10px 20px',
+          padding: '8px 12px',
           background: theme.buttonBg,
           color: theme.buttonText,
           border: 'none',
           borderRadius: '5px',
           cursor: 'pointer',
-          fontSize: '14px'
+          fontSize: '13px',
+          whiteSpace: 'nowrap'
         }}
       >
-        {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+        {isDarkMode ? '☀️' : '🌙'}
       </button>
     </div>
   );
