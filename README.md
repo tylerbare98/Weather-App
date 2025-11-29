@@ -1,6 +1,36 @@
-# Getting Started with Create React App
+# Weather App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern, responsive weather application built with React and TypeScript that provides current weather and 5-day forecasts.
+
+## Features
+- Current weather conditions with detailed metrics
+- 5-day weather forecast
+- City search with autocomplete suggestions
+- Recent search history
+- Geolocation support
+- Dark/Light mode toggle
+- Temperature unit conversion (°F/°C)
+
+## Setup
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm start
+   ```
+
+The app will open at [http://localhost:3000](http://localhost:3000)
+
+## API Key Note
+
+This project includes a free OpenWeatherMap API key for demonstration purposes. The free tier has no usage limits or costs.
+
+**Important:** In production applications with paid API services, API keys should NEVER be committed to version control. This project demonstrates proper security practices in the codebase structure (using environment variables), but includes the key for easy setup since it's a free, unlimited service.
 
 ## Available Scripts
 
