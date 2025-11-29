@@ -28,9 +28,7 @@ The app will open at [http://localhost:3000](http://localhost:3000)
 
 ## API Key Note
 
-This project includes a free OpenWeatherMap API key for demonstration purposes. The free tier has no usage limits or costs.
-
-**Important:** In production applications with paid API services, API keys should NEVER be committed to version control. This project demonstrates proper security practices in the codebase structure (using environment variables), but includes the key for easy setup since it's a free, unlimited service.
+This project includes a free OpenWeatherMap API key for demonstration purposes. The free tier has no usage limits or costs. In production applications with paid API services, API keys should NEVER be committed to version control. 
 
 ## Available Scripts
 
