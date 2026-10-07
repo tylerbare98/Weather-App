@@ -1,5 +1,7 @@
 export interface WeatherData {
   name: string;
+  coord: { lat: number; lon: number };
+  timezone: number;
   main: {
     temp: number;
     humidity: number;
@@ -15,8 +17,9 @@ export interface WeatherData {
   };
   visibility: number;
   sys: {
-    sunrise: number;
-    sunset: number;
+    country?: string;
+    sunrise: number | null;
+    sunset: number | null;
   };
 }
 
@@ -36,10 +39,13 @@ export interface ForecastData {
   }>;
   city: {
     name: string;
+    timezone: number;
   };
 }
 
 export interface CitySuggestion {
+  lat: number;
+  lon: number;
   name: string;
   country: string;
   state?: string;

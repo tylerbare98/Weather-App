@@ -36,3 +36,10 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+* { box-sizing: border-box; }
+button, input { font: inherit; }
+button { min-height: 44px; }
+button:focus-visible, input:focus-visible { outline: 3px solid #a16be5; outline-offset: 3px; }
+main { overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { CitySuggestion, Theme } from '../types/weather';
 
 interface SearchBarProps {
@@ -25,16 +26,23 @@ export default function SearchBar({
   theme,
   isDarkMode
 }: SearchBarProps) {
+  const [activeIndex, setActiveIndex] = useState(-1);
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '10px', position: 'relative' }}>
-        <div style={{ position: 'relative' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ position: 'relative', width: 'min(300px, 100%)', maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
           <input
             type="text"
+            aria-label="City name"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={showSuggestions && suggestions.length > 0}
+            aria-controls={showSuggestions && suggestions.length > 0 ? "city-suggestions" : undefined}
+            aria-activedescendant={showSuggestions && activeIndex >= 0 && activeIndex < suggestions.length ? `city-option-${activeIndex}` : undefined}
             placeholder="Enter city name..."
             value={city}
             onChange={(e) => {
-              setCity(e.target.value);
+              setCity(e.target.value); setActiveIndex(-1);
               if (e.target.value.length >= 3) {
                 setShowSuggestions(true);
               } else {
@@ -42,8 +50,11 @@ export default function SearchBar({
               }
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleSearch();
+              if (e.key === 'ArrowDown') { e.preventDefault(); setShowSuggestions(true); setActiveIndex(index => Math.min(index + 1, suggestions.length - 1));
+              } else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIndex(index => Math.max(index - 1, 0));
+              } else if (e.key === 'Enter') {
+                if (showSuggestions && activeIndex >= 0 && suggestions[activeIndex]) handleSuggestionClick(suggestions[activeIndex]); else handleSearch();
+                setActiveIndex(-1);
               } else if (e.key === 'Escape') {
                 setShowSuggestions(false);
               }
@@ -56,7 +67,7 @@ export default function SearchBar({
             style={{
               padding: '10px',
               fontSize: '16px',
-              width: '300px',
+              width: '100%',
               background: theme.inputBg,
               color: theme.text,
               border: `2px solid ${theme.inputBorder}`,
@@ -64,7 +75,7 @@ export default function SearchBar({
             }}
           />
           {showSuggestions && suggestions.length > 0 && (
-            <div style={{
+            <div id="city-suggestions" role="listbox" aria-label="City suggestions" style={{
               position: 'absolute',
               top: '100%',
               left: 0,
@@ -79,11 +90,11 @@ export default function SearchBar({
               overflowY: 'auto'
             }}>
               {suggestions.map((suggestion, index) => (
-                <div
+                <button type="button" role="option" id={`city-option-${index}`} aria-selected={activeIndex === index}
                   key={`${suggestion.name}-${suggestion.country}-${index}`}
                   onClick={() => handleSuggestionClick(suggestion)}
                   style={{
-                    padding: '10px 15px',
+                    padding: '10px 15px', width: '100%', textAlign: 'left', color: theme.text, background: activeIndex === index ? (isDarkMode ? '#444' : '#e9eef4') : theme.cardBg, border: 0, font: 'inherit',
                     cursor: 'pointer',
                     borderBottom: index < suggestions.length - 1 ? `1px solid ${theme.inputBorder}` : 'none',
                     transition: 'background 0.2s'
@@ -99,7 +110,7 @@ export default function SearchBar({
                   <div style={{ fontSize: '12px', opacity: 0.7 }}>
                     {suggestion.state ? `${suggestion.state}, ${suggestion.country}` : suggestion.country}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -122,6 +133,8 @@ export default function SearchBar({
           Search
         </button>
         <button
+          aria-label="Use my location"
+          title="Use my location"
           onClick={handleUseMyLocation}
           style={{
             padding: '10px 15px',

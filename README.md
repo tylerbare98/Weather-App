@@ -26,9 +26,11 @@ A modern, responsive weather application built with React and TypeScript that pr
 
 The app will open at [http://localhost:3000](http://localhost:3000)
 
-## API Key Note
+## Weather data
 
-This project includes a free OpenWeatherMap API key for demonstration purposes. The free tier has no usage limits or costs. In production applications with paid API services, API keys should NEVER be committed to version control. 
+Current conditions and daily forecasts come from [Open-Meteo](https://open-meteo.com/); city lookup uses its geocoding API with [GeoNames](https://www.geonames.org/) data. No API key or environment file is needed. Internet access is required.
+
+Recent locations and display preferences are saved in this browser. The location button requests browser geolocation permission; coordinates are sent to the weather service only when that feature is used. Sunrise and sunset use the selected location's timezone. Forecast cards show each day's mean, high, and low temperatures.
 
 ## Available Scripts
 

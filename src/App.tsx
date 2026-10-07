@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CitySuggestion } from './types/weather';
 import { useWeather } from './hooks/useWeather';
 import { useCitySuggestions } from './hooks/useCitySuggestions';
-import { useRecentSearches } from './hooks/useRecentSearches';
+import { RecentSearch, useRecentSearches } from './hooks/useRecentSearches';
 import { convertTemp, getWeatherBackground, getWeatherIcon, getTheme } from './utils/weatherHelpers';
 import SearchBar from './components/SearchBar';
 import ThemeControls from './components/ThemeControls';
@@ -10,20 +10,27 @@ import RecentSearches from './components/RecentSearches';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import WeatherCard from './components/WeatherCard';
 import ForecastGrid from './components/ForecastGrid';
+import { readStored, saveStored } from './utils/storage';
 
 function App() {
   const [city, setCity] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [isCelsius, setIsCelsius] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => readStored('weather-dark-mode') !== false);
+  const [isCelsius, setIsCelsius] = useState(() => readStored('weather-celsius') === true);
+  const [locating, setLocating] = useState(false);
+  const locationRequest = useRef(0);
+  useEffect(() => saveStored('weather-dark-mode', isDarkMode), [isDarkMode]);
+  useEffect(() => saveStored('weather-celsius', isCelsius), [isCelsius]);
 
-  const { weatherData, forecastData, loading, error, setError, fetchWeatherByCity, fetchWeatherByCoords } = useWeather();
+  const { weatherData, forecastData, loading, error, forecastError, setError, fetchWeatherByCity, fetchWeatherByCoords } = useWeather();
   const { suggestions, showSuggestions, setShowSuggestions } = useCitySuggestions(city);
   const { recentSearches, saveToRecentSearches } = useRecentSearches();
 
   const theme = getTheme(isDarkMode);
 
   const handleSearch = async () => {
-    if (!city.trim()) return;
+    if (!city.trim()) { setError('Enter a city to search.'); return; }
+    locationRequest.current++; setLocating(false);
+    setShowSuggestions(false);
     try {
       const cityName = await fetchWeatherByCity(city);
       saveToRecentSearches(cityName);
@@ -34,12 +41,14 @@ function App() {
   };
 
   const handleSuggestionClick = async (suggestion: CitySuggestion) => {
+    locationRequest.current++; setLocating(false);
+    setShowSuggestions(false);
     const cityName = suggestion.state
       ? `${suggestion.name}, ${suggestion.state}, ${suggestion.country}`
       : `${suggestion.name}, ${suggestion.country}`;
     setCity(cityName);
     try {
-      const savedCityName = await fetchWeatherByCity(cityName);
+      const savedCityName = await fetchWeatherByCoords(suggestion.lat, suggestion.lon, suggestion.name, suggestion.country);
       saveToRecentSearches(savedCityName);
     } catch (err) {
       // Error already handled by useWeather hook
@@ -53,28 +62,36 @@ function App() {
       return;
     }
 
-    setShowSuggestions(false);
+    setShowSuggestions(false); setError(''); setLocating(true);
+    const requestId = ++locationRequest.current;
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        if (requestId !== locationRequest.current) return;
+        setLocating(false);
         try {
           const cityName = await fetchWeatherByCoords(position.coords.latitude, position.coords.longitude);
-          setCity(cityName);
+          setCity(cityName.name);
           saveToRecentSearches(cityName);
         } catch (err) {
           // Error already handled by useWeather hook
         }
       },
-      (error) => {
+      () => {
+        if (requestId !== locationRequest.current) return;
+        setLocating(false);
         setError('Unable to retrieve your location. Please enter a city manually.');
-      }
+      },
+      { timeout: 10000, maximumAge: 300000 }
     );
   };
 
-  const handleRecentSearchClick = async (search: string) => {
+  const handleRecentSearchClick = async (search: RecentSearch) => {
+    locationRequest.current++; setLocating(false);
     setShowSuggestions(false);
-    setCity(search);
+    setCity(search.name);
     try {
-      await fetchWeatherByCity(search);
+      const result = typeof search.lat === 'number' && typeof search.lon === 'number' ? await fetchWeatherByCoords(search.lat, search.lon, search.name) : await fetchWeatherByCity(search.name);
+      saveToRecentSearches(result);
     } catch (err) {
       // Error already handled by useWeather hook
     }
@@ -83,10 +100,11 @@ function App() {
   const convertTempWithMode = (temp: number) => convertTemp(temp, isCelsius);
 
   return (
-    <div style={{
+    <main style={{
       minHeight: '100vh',
       background: weatherData ? getWeatherBackground(weatherData.weather[0].main, isDarkMode) : theme.background,
       color: theme.text,
+      backgroundBlendMode: 'normal',
       padding: '20px',
       textAlign: 'center',
       transition: 'all 0.5s ease'
@@ -140,10 +158,12 @@ function App() {
         </div>
       )}
 
+      {locating && <p role="status">Finding your location…</p>}
+      {loading && <p role="status">Loading weather…</p>}
       {loading && <LoadingSkeleton theme={theme} isDarkMode={isDarkMode} />}
 
       {error && (
-        <div style={{ marginTop: '30px', color: '#ff6b6b', fontSize: '18px' }}>
+        <div role="alert" style={{ margin: '30px auto', maxWidth: '600px', padding: '16px', borderRadius: '10px', background: theme.cardBg, color: isDarkMode ? '#ffb8b8' : '#a31228', fontSize: '16px' }}>
           {error}
         </div>
       )}
@@ -159,6 +179,8 @@ function App() {
         />
       )}
 
+      {forecastError && !loading && <p role="status" style={{ background: theme.cardBg, padding: 16, borderRadius: 8, maxWidth: 600, margin: '20px auto' }}>{forecastError}</p>}
+
       {forecastData && !loading && (
         <ForecastGrid
           forecastData={forecastData}
@@ -169,7 +191,8 @@ function App() {
           isDarkMode={isDarkMode}
         />
       )}
-    </div>
+      <p style={{fontSize: '12px', marginTop: 32}}>Weather by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>Open-Meteo</a> · Locations by <a href="https://www.geonames.org/" target="_blank" rel="noreferrer" style={{ color: 'inherit' }}>GeoNames</a> · Times shown in the searched location’s timezone.</p>
+    </main>
   );
 }
 

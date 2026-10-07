@@ -29,7 +29,7 @@ export default function WeatherCard({
       animation: 'fadeIn 0.5s ease-out'
     }}>
       <h2 style={{ fontSize: '28px', marginBottom: '8px' }}>
-        {weatherData.name}
+        {weatherData.name}{weatherData.sys.country ? `, ${weatherData.sys.country}` : ''}
       </h2>
       <div style={{ fontSize: '80px', margin: '20px 0' }}>
         {getWeatherIcon(weatherData.weather[0].main)}
@@ -69,11 +69,11 @@ export default function WeatherCard({
         </div>
         <div>
           <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Sunrise</div>
-          <div>{new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+          <div>{weatherData.sys.sunrise === null ? 'No sunrise today' : new Date((weatherData.sys.sunrise + weatherData.timezone) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}</div>
         </div>
         <div>
           <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Sunset</div>
-          <div>{new Date(weatherData.sys.sunset * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+          <div>{weatherData.sys.sunset === null ? 'No sunset today' : new Date((weatherData.sys.sunset + weatherData.timezone) * 1000).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}</div>
         </div>
       </div>
     </div>

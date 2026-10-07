@@ -17,15 +17,15 @@ export default function ThemeControls({
 }: ThemeControlsProps) {
   return (
     <div style={{
-      position: 'absolute',
-      top: '10px',
-      right: '10px',
+      position: 'relative',
+      marginBottom: '24px',
       display: 'flex',
       gap: '8px',
       flexWrap: 'wrap',
       justifyContent: 'flex-end'
     }}>
       <button
+        aria-label={`Switch to ${isCelsius ? 'Fahrenheit' : 'Celsius'}`}
         onClick={() => setIsCelsius(!isCelsius)}
         style={{
           padding: '8px 12px',
@@ -42,6 +42,7 @@ export default function ThemeControls({
         {isCelsius ? '°F' : '°C'}
       </button>
       <button
+        aria-label={`Switch to ${isDarkMode ? 'light' : 'dark'} mode`}
         onClick={() => setIsDarkMode(!isDarkMode)}
         style={{
           padding: '8px 12px',

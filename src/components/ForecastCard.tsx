@@ -2,6 +2,7 @@ import { Theme } from '../types/weather';
 
 interface ForecastCardProps {
   dt: number;
+  timezone: number;
   temp: number;
   tempMax: number;
   tempMin: number;
@@ -15,7 +16,7 @@ interface ForecastCardProps {
 }
 
 export default function ForecastCard({
-  dt,
+  dt, timezone,
   temp,
   tempMax,
   tempMin,
@@ -27,9 +28,9 @@ export default function ForecastCard({
   theme,
   isDarkMode
 }: ForecastCardProps) {
-  const date = new Date(dt * 1000);
-  const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-  const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const date = new Date((dt + timezone) * 1000);
+  const dayName = date.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
+  const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
   return (
     <div
@@ -63,7 +64,7 @@ export default function ForecastCard({
       </div>
       <div style={{
         fontSize: '12px',
-        color: isDarkMode ? '#888' : '#999',
+        color: isDarkMode ? '#bbb' : '#666',
         marginTop: '8px'
       }}>
         H: {convertTemp(tempMax)}° L: {convertTemp(tempMin)}°

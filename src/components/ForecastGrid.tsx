@@ -17,7 +17,17 @@ export default function ForecastGrid({
   isCelsius,
   theme,
   isDarkMode
-}: ForecastGridProps) {
+ }: ForecastGridProps) {
+  const timezone = forecastData.city.timezone || 0;
+  const days = new Map<string, ForecastData['list']>();
+  forecastData.list.forEach(item => {
+    const key = new Date((item.dt + timezone) * 1000).toISOString().slice(0, 10);
+    days.set(key, [...(days.get(key) || []), item]);
+  });
+  const daily = Array.from(days.values()).slice(0, 5).map(items => {
+    const noon = items.reduce((closest, item) => Math.abs(new Date((item.dt + timezone) * 1000).getUTCHours() - 12) < Math.abs(new Date((closest.dt + timezone) * 1000).getUTCHours() - 12) ? item : closest);
+    return { ...noon, main: { ...noon.main, temp_min: Math.min(...items.map(i => i.main.temp_min)), temp_max: Math.max(...items.map(i => i.main.temp_max)) } };
+  });
   return (
     <div style={{
       marginTop: '20px',
@@ -35,13 +45,12 @@ export default function ForecastGrid({
         gap: '15px',
         justifyContent: 'center'
       }}>
-        {forecastData.list
-          .filter((_item, index) => index % 8 === 0)
-          .slice(0, 5)
+        {daily
           .map((item) => (
             <ForecastCard
               key={item.dt}
               dt={item.dt}
+              timezone={timezone}
               temp={item.main.temp}
               tempMax={item.main.temp_max}
               tempMin={item.main.temp_min}

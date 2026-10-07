@@ -1,8 +1,9 @@
+import { RecentSearch } from '../hooks/useRecentSearches';
 import { Theme } from '../types/weather';
 
 interface RecentSearchesProps {
-  recentSearches: string[];
-  onSearchClick: (search: string) => void;
+  recentSearches: RecentSearch[];
+  onSearchClick: (search: RecentSearch) => void;
   theme: Theme;
 }
 
@@ -16,7 +17,7 @@ export default function RecentSearches({ recentSearches, onSearchClick, theme }:
       <span style={{ fontSize: '14px', opacity: 0.7 }}>Recent:</span>
       {recentSearches.map((search) => (
         <button
-          key={search}
+          key={`${search.name}-${search.lat}-${search.lon}`}
           onClick={() => onSearchClick(search)}
           style={{
             padding: '5px 12px',
@@ -37,7 +38,7 @@ export default function RecentSearches({ recentSearches, onSearchClick, theme }:
             e.currentTarget.style.color = theme.text;
           }}
         >
-          {search}
+          {search.name}
         </button>
       ))}
     </div>
